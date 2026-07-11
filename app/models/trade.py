@@ -1,6 +1,6 @@
 from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Float
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationships
+from sqlalchemy.orm import relationship
 from app.database import Base
 class Trade(Base):
 	__tablename__= "trades"
@@ -12,5 +12,5 @@ class Trade(Base):
 	price = Column(Float,nullable=False)
 	trade_date=Column(DateTime(timezone=True),nullable = False)
 	created_at = Column(DateTime(timezone=True),server_default=func.now(),nullable= False)
-# portfolio = relationships("Portfolio",back_populates="trades")
-# asset = relationships("Asset")
+	portfolios = relationship("Portfolio")
+	asset = relationship("Asset")

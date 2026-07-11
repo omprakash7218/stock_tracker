@@ -1,10 +1,10 @@
-from fastapi import status,APIRouter,Depends,HTTPException
+from fastapi import status,APIRouter,Depends,HTTPException,Response
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.portfolio import Portfolio
-from app.schemas.portfolio import PortfolioCreate
+from app.schemas.portfolio import PortfolioCreate,PortfolioOut
 from app.oauth2 import get_current_user
-router = APIRouter(tags = ["PORTFOLIOS"],prefix="/portfolio")
+router = APIRouter(tags = ["PORTFOLIOS"],prefix="/portfolios")
 @router.get("/")
 def show_portfolios(db:Session=Depends(get_db)):
 	portfolios = db.query(Portfolio).all()
@@ -30,3 +30,20 @@ def edit_portfolio(portfolio_id : int, portfolio:PortfolioCreate,current_user=De
 	db.commit()
 	db.refresh(portfolio_query.first())
 	return portfolio_query.first()
+
+@router.get("/{portfolio_id}",response_model = PortfolioOut)
+def show_portfolio(portfolio_id:int,current_user : UserOut = Depends(get_current_user),db:Session=Depends(get_db)):
+	portfolio = db.query(Portfolio).filter(Portfolio.id == portfolio_id and Portfolio.user_id == current_user.id).first()
+	if not portfolio: 
+		raise HTTPException(status_code = status.HTTP_403_FORBIDDEN)
+	return portfolio
+
+@router.delete("/{portfolio_id}")
+def delete_portfolio(portfolio_id:int,current_user:UserOut=Depends(get_current_user),db:Session=Depends(get_db)):
+	query_portfolio = db.query(Portfolio).filter(Portfolio.id == portfolio_id and Portfolio.user_id == current_user.id)
+	old_portfolio = query_portfolio.first()
+	if not old_portfolio :
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+	db.delete(old_portfolio)
+	db.commit()
+	return Response(status_code=status.HTTP_204_NO_CONTENT)

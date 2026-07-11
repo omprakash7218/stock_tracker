@@ -9,5 +9,4 @@ class User(Base):
 	email = Column(String, unique = True, nullable = False)
 	password = Column(String, nullable = False)
 	created_at = Column(DateTime(timezone=True),nullable = False , server_default = func.now())
-
-portfolios = relationship("Portfolios" , back_populates="owner")
+	portfolios = relationship("Portfolio" , back_populates="owner")
