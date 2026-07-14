@@ -5,7 +5,7 @@ from app.routers import users,assets,auth,portfolios,trades,transactions
 app = FastAPI()
 
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 app.include_router(users.router)
 app.include_router(assets.router)
 app.include_router(auth.router)
