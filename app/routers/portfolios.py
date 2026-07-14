@@ -4,6 +4,7 @@ from app.database import get_db
 from app.models.portfolio import Portfolio
 from app.schemas.portfolio import PortfolioCreate,PortfolioOut
 from app.oauth2 import get_current_user
+from app.routers.users import UserOut
 router = APIRouter(tags = ["PORTFOLIOS"],prefix="/portfolios")
 @router.get("/")
 def show_portfolios(db:Session=Depends(get_db)):
