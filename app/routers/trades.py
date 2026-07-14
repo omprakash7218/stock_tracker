@@ -19,6 +19,8 @@ def show_trades(current_user:UserOut = Depends(get_current_user),db:Session=Depe
 	# print(type(portfolios[0]))
 	# return trades
 	trades = db.query(Trade).join(Portfolio).filter(Portfolio.user_id == current_user.id).all()
+	if not trades:
+		raise HTTPException(status_code = status.HTTP_404_NOT_FOUND)
 	return trades
 @router.post("/{portfolio_id}")
 def create_trade(portfolio_id : int,asset : TradeCreate, current_user:UserOut=Depends(get_current_user),db:Session=Depends(get_db)):

@@ -5,15 +5,15 @@ from datetime import datetime
 from app.schemas.trade import TradeOut
 
 class TransactionCreate(BaseModel):
-    trade_id: int
-    type: TransactionType
-    amount: float
+    # trade_id: int
+    # type: TransactionType
+    # amount: float
     fee: float
     notes: Optional[str] = None
 
 class TransactionResponse(BaseModel):
     id: int
-    trade_id: int
+    # trade_id: int
     type: TransactionType
     amount: float
     fee: float

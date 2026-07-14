@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.schemas.asset import AssetCreate
 from app.database import get_db
 from app.models.asset import Asset
-
+from app.services.price_service import PriceService
 
 router = APIRouter(prefix="/assets",tags=["ASSETS"])
 
@@ -51,4 +51,11 @@ def show_asset(symbol:str,db:Session=Depends(get_db)):
 	return asset
 
 
-
+@router.get("/{symbol}/price")
+def get_asset_price(symbol:str,asset_type:str):
+	price = PriceService.get_price(symbol,asset_type)
+	if price == None:
+		raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,detail="Could not fetch price.")
+	return {
+		"symbol":symbol,"price":price
+	}
