@@ -10,8 +10,14 @@ services:
         value: 3.11
       - key: PORT
         value: 10000
-      # Add your Supabase variables here (or set them in Render dashboard)
+      
+      # === Supabase Credentials (MUST BE CORRECT) ===
+      - key: SUPABASE_DB_URL
+        value: postgresql://postgres:ZrdEwXdBFhHVfyRy@aws-1-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require
+        sync: false
       - key: SUPABASE_URL
+        value: https://your-project-ref.supabase.co
         sync: false
       - key: SUPABASE_KEY
+        value: your-supabase-anon-key
         sync: false
