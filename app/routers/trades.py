@@ -41,7 +41,7 @@ def show_trade(id:int , current_user : UserOut = Depends(get_current_user),db:Se
 	
 	return trade
 
-@router.delete("{id}")
+@router.delete("/{id}")
 def delete_trade(id:int, current_user : UserOut = Depends(get_current_user), db:Session=Depends(get_db)):
 	
 	trade = db.query(Trade).filter(Trade.id == id).first()

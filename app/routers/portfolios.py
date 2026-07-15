@@ -1,10 +1,14 @@
 from fastapi import status,APIRouter,Depends,HTTPException,Response
 from sqlalchemy.orm import Session
+from app.oauth2 import get_current_user
 from app.database import get_db
 from app.models.portfolio import Portfolio
+from app.models.trade import Trade
+from app.models.asset import Asset
 from app.schemas.portfolio import PortfolioCreate,PortfolioOut
-from app.oauth2 import get_current_user
-from app.routers.users import UserOut
+from app.schemas.user import UserOut
+from app.verification import verify_portfolio,verify_asset
+from app.services.price_service import PriceService
 router = APIRouter(tags = ["PORTFOLIOS"],prefix="/portfolios")
 @router.get("/")
 def show_portfolios(db:Session=Depends(get_db)):
@@ -48,3 +52,62 @@ def delete_portfolio(portfolio_id:int,current_user:UserOut=Depends(get_current_u
 	db.delete(old_portfolio)
 	db.commit()
 	return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@router.get("/{portfolio_id}/summary")
+def portfolio_sumamry(portfolio_id : int,current_user : UserOut = Depends(get_current_user), db : Session = Depends(get_db)):
+	portfolio = db.query(Portfolio).filter(Portfolio.id == portfolio_id,Portfolio.user_id == current_user.id).first()
+	if not portfolio :
+		raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,detail = "Portfolio Not Found")
+	
+	trades = db.query(Trade).join(Asset).filter(Trade.portfolio_id == portfolio_id).all()
+	if not trades: 
+		return {
+			"portfolio_id": portfolio_id,
+			"portfolio_name":portfolio.name,
+			"total_invested":0,
+			"current_value":0,
+			"profit_loss":0,
+			"profit_loss_percentage":0,
+			"holdings": []
+		}
+		#calculate totals
+	total_invested = 0
+	current_value = 0
+	holdings = []
+	for trade in trades:
+		#get current price 
+		current_price = PriceService.get_price(trade.asset.symbol,trade.asset.asset_type)
+		if current_price is None:
+			current_price = trade.price
+		current_amount =  current_price * trade.quantity
+		amount_invested = trade.price * trade.quantity
+		profit_loss_single = current_amount - amount_invested
+
+		holdings.append({
+			"symbol":trade.asset.symbol,
+			"name":trade.asset.name,
+			"avg_buy_price":trade.price,
+			"quantity":trade.quantity,
+			"total_invested":amount_invested,
+			"current_price":current_price,
+			"current_amount":current_amount,
+			"profit_loss":profit_loss_single,
+			"profit_loss_percentage": (profit_loss_single/amount_invested)*100 if amount_invested > 0 else 0
+		})
+			
+		total_invested += amount_invested
+		current_value += current_amount
+		total_profit_loss = current_value - amount_invested
+		total_profit_loss_percentage = (total_profit_loss /total_invested)*100 if total_invested >0 else 0
+	return {
+		"portfolio_id": portfolio_id,
+		"portfolio_name": portfolio.name,
+		"total_invested":total_invested,
+		"current_value":current_value,
+		"total_profit_loss":total_profit_loss,
+		"total_profit_loss_percentage":total_profit_loss_percentage,
+		"holdings":holdings
+	}
+
+			
+		

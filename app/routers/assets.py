@@ -27,11 +27,10 @@ def edit_asset(symbol:str , asset1:AssetCreate , db:Session=Depends(get_db)):
 	asset_query =db.query(Asset).filter(Asset.symbol == symbol) # This won't be helpful for next operation. 
 	asset = asset_query.first()
 	if not asset:
-		raise HTTPException(status_code = status.HTTP_404_NOT_FOUND , detail=f"I don't see the asset in our database.")	
-	if db.query(Asset).filter(Asset.symbol == asset.symbol or Asset.name == asset.name):
-		raise HTTPException(status_code = 406 , detail="Asset already exists.")
+		raise HTTPException(status_code = status.HTTP_404_NOT_FOUND , detail=f"I don't see the asset in our database.")
 	asset_query.update(asset1.dict(),synchronize_session= False)
 	db.commit()
+	db.refresh(asset)
 	print(asset)
 	return {"message":asset}
 @router.delete("/{symbol}")
