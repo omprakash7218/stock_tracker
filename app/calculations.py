@@ -1,0 +1,30 @@
+
+
+def add(num1:int,num2:int):
+    return num1 + num2 
+
+
+def subtract(num1:int,num2:int):
+	return num1 - num2
+
+def multiply(num1:int,num2:int):
+	return num1*num2
+
+def divide(num1:int,num2:int):
+	return num1/num2
+
+
+from decimal import Decimal
+
+class BankAccount():
+	def __init__(self,starting_amount = 0):
+		self.balance = starting_amount
+
+	def deposit(self,amount):
+		self.balance +=  amount
+
+	def withdraw(self,amount):
+		self.balance -= amount
+
+	def interest(self):
+		self.balance *= Decimal("1.1")

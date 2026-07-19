@@ -29,7 +29,7 @@ class PriceService:
 			print(f"Error fetching crypto price: {e}")
 			return None
 	@staticmethod
-	def stock_price(symbol):
+	def _stock_price(symbol):
 		stock = yf.Ticker(symbol)
 		stock_price = stock.history(period="1d")["Close"].iloc[-1]
 		return stock_price
@@ -38,12 +38,12 @@ class PriceService:
 		try:
 			symbol = symbol.upper()
 			if symbol.endswith(".NS"):
-				price = PriceService.stock_price(symbol)
+				price = PriceService._stock_price(symbol)
 				return price
 			else:
 				usd_inr = yf.Ticker("INR=X")
 				ex_rate = usd_inr.history(period="1d")["Close"].iloc[-1]
-				price = PriceService.stock_price(symbol) * ex_rate
+				price = PriceService._stock_price(symbol) * ex_rate
 				return price
 		except Exception as e:
 			print(f"Error fetching stock price: {e}")

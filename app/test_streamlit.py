@@ -40,15 +40,15 @@ import yfinance as yf
 
 def get_price_in_inr(ticker_symbol):
     stock = yf.Ticker(ticker_symbol)
-    inr_rate = yf.Ticker("INR=X")
+    # inr_rate = yf.Ticker("INR=X")
 
     stock_price_usd = stock.history(period="1d")["Close"].iloc[-1]
-    usd_inr = inr_rate.history(period="1d")["Close"].iloc[-1]
+    # usd_inr = inr_rate.history(period="1d")["Close"].iloc[-1]
 
-    stock_price_inr = stock_price_usd * usd_inr
+    stock_price_inr = stock_price_usd 
 
     return stock_price_inr
 
-# print(get_price_in_inr("AAPL"))
+print(get_price_in_inr("MRF.NS"))
 
 
