@@ -50,7 +50,7 @@ def show_asset(symbol:str,db:Session=Depends(get_db)):
 	return asset
 
 
-@router.get("/{symbol}/price")
+@router.get("/{symbol}/fetch_current_price")
 def get_asset_price(symbol:str,asset_type:str):
 	price = PriceService.get_price(symbol,asset_type)
 	if price == None:

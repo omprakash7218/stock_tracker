@@ -1,5 +1,5 @@
 import pytest
-from app.calculations import add,subtract,multiply,divide,BankAccount
+from app.calculations import add,subtract,multiply,divide,BankAccount,InsufficientFunds
 from decimal import Decimal
 import time
 # what if we want to do this for more than 2 different sets of numbers , -- decorator pytest parameterized 
@@ -66,6 +66,11 @@ def test_bank_transaction(zero_bank_account,deposited,withdrew,remaining_balance
 	zero_bank_account.deposit(deposited)
 	zero_bank_account.withdraw(withdrew)
 	assert zero_bank_account.balance == remaining_balance
+
+def test_insufficient_funds(bank_account):
+	with pytest.raises(InsufficientFunds):
+		bank_account.withdraw(5000)
+	
 
 # bank_account1 = BankAccount(1220)
 
