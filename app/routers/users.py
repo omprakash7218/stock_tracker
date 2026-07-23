@@ -12,7 +12,7 @@ router = APIRouter(tags= ["USERS"],prefix = "/users")
 @router.get("/hello/{name}")
 def hello_name(name):
 	print("Hello ",name)
-	return name
+	return {"message":f"Hello! {name.upper()}"}
 
 @router.get("/",response_model=List[UserOut])
 def show_users(db:Session=Depends(get_db),current_user:UserOut=Depends(get_current_user)):
@@ -32,7 +32,7 @@ def create_user(user:UserCreate, db:Session=Depends(get_db)):
 	db.refresh(new_user)
 	return new_user
 @router.delete("/{username}")
-def delete_user(username:str,db:Session=Depends(get_db)):
+def delete_user(username:str,current_user:UserOut=Depends(get_current_user),db:Session=Depends(get_db)):
 	user_query = db.query(User).filter(User.username==username)
 	user = user_query.first()
 	if not user:
@@ -41,7 +41,7 @@ def delete_user(username:str,db:Session=Depends(get_db)):
 	db.commit()
 	return Response(status_code = status.HTTP_204_NO_CONTENT)
 @router.put("/{username}",response_model = UserOut)
-def update_user(username : str , edit_user:UserCreate , db : Session = Depends(get_db)):
+def update_user(username : str , edit_user:UserCreate ,current_user:UserOut=Depends(get_current_user) , db : Session = Depends(get_db)):
 	user_query = db.query(User).filter(User.username == username)
 	user = user_query.first()
 	if not user:
