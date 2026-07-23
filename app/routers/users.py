@@ -33,7 +33,7 @@ def create_user(user:UserCreate, db:Session=Depends(get_db)):
 	return new_user
 @router.delete("/{username}")
 def delete_user(username:str,current_user:UserOut=Depends(get_current_user),db:Session=Depends(get_db)):
-	user_query = db.query(User).filter(User.username==username)
+	user_query = db.query(User).filter(User.username==username,current_user.username == username)
 	user = user_query.first()
 	if not user:
 		raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,detail=f"User not found")
@@ -42,7 +42,7 @@ def delete_user(username:str,current_user:UserOut=Depends(get_current_user),db:S
 	return Response(status_code = status.HTTP_204_NO_CONTENT)
 @router.put("/{username}",response_model = UserOut)
 def update_user(username : str , edit_user:UserCreate ,current_user:UserOut=Depends(get_current_user) , db : Session = Depends(get_db)):
-	user_query = db.query(User).filter(User.username == username)
+	user_query = db.query(User).filter(User.username == username,current_user.username == username)
 	user = user_query.first()
 	if not user:
 		raise HTTPException(status_code = 404, detail = "Not Found")
