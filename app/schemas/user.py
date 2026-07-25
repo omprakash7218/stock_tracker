@@ -16,3 +16,6 @@ class UserLogin(BaseModel):
 
 class TokenData(BaseModel):
 	email : EmailStr
+
+class UserPassword(BaseModel):
+	current_password: str
