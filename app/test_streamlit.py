@@ -15,7 +15,7 @@
 
 # info = stock.info
 # print(info["currentPrice"])
-# import requests 
+# import requests
 # url = "https://official-joke-api.appspot.com/random_joke"
 # response = requests.get(url)
 # data = response.json()
@@ -36,19 +36,26 @@
 # print(f"The current price of {coin} is Rs.{price}")
 
 
-import yfinance as yf
+# import yfinance as yf
 
-def get_price_in_inr(ticker_symbol):
-    stock = yf.Ticker(ticker_symbol)
-    # inr_rate = yf.Ticker("INR=X")
+# def get_price_in_inr(ticker_symbol):
+#     stock = yf.Ticker(ticker_symbol)
+#     # inr_rate = yf.Ticker("INR=X")
 
-    stock_price_usd = stock.history(period="1d")["Close"].iloc[-1]
-    # usd_inr = inr_rate.history(period="1d")["Close"].iloc[-1]
+#     stock_price_usd = stock.history(period="1d")["Close"].iloc[-1]
+#     # usd_inr = inr_rate.history(period="1d")["Close"].iloc[-1]
 
-    stock_price_inr = stock_price_usd 
+#     stock_price_inr = stock_price_usd
 
-    return stock_price_inr
+#     return stock_price_inr
 
-print(get_price_in_inr("MRF.NS"))
+# print(get_price_in_inr("MRF.NS"))
 
 
+def sum(a: int, b: int) -> int:
+    results = a + b
+    return str(results)
+
+
+a, b = 1, 4
+print(sum(a, b))

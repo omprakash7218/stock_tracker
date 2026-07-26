@@ -44,7 +44,7 @@ def delete_asset(symbol:str,db:Session=Depends(get_db)):
 
 @router.get("/{symbol}")
 def show_asset(symbol:str,db:Session=Depends(get_db)):
-	asset = db.query(Asset).filter(Asset.symbol == symbol).first()
+	asset = db.query(Asset).filter(Asset.symbol == symbol.upper()).first()
 	if not asset:
 		raise HTTPException(status_code = status.HTTP_404_NOT_FOUND)
 	return asset
