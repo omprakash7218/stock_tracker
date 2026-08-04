@@ -8,6 +8,7 @@ from app.schemas.trade import TradeCreate,TradeOut
 from app.verification import verify_portfolio,verify_asset
 from app.models.portfolio import Portfolio
 from typing import List
+from app.models.holding import Holding
 router = APIRouter(tags=["TRADES"],prefix="/trades")
 
 @router.get("/",response_model=List[TradeOut])
@@ -22,15 +23,60 @@ def show_trades(current_user:UserOut = Depends(get_current_user),db:Session=Depe
 	if not trades:
 		raise HTTPException(status_code = status.HTTP_404_NOT_FOUND)
 	return trades
-@router.post("/{portfolio_id}")
+@router.post("/{portfolio_id}",response_model=TradeOut)
 def create_trade(portfolio_id : int,asset : TradeCreate, current_user:UserOut=Depends(get_current_user),db:Session=Depends(get_db)):
 	portfolio = verify_portfolio(portfolio_id,current_user,db)
-	asset_object = verify_asset(asset.asset_id,db)
-	trade = Trade(**asset.dict(),portfolio_id = portfolio_id)
-	db.add(trade)
-	db.commit()
-	db.refresh(trade)
-	return trade
+	verify_asset(asset.asset_id,asset.symbol,db)
+	holding_query = db.query(Holding).filter(Holding.portfolio_id==portfolio_id,Holding.symbol == asset.symbol)
+	holding = holding_query.first()
+	if not holding: 
+		if asset.trade_type == "sell" :
+			raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Not enough quantity")
+		elif asset.trade_type == "buy":
+			trade = Trade(**asset.dict(),portfolio_id = portfolio_id)
+			db.add(trade)
+			db.commit()
+			db.refresh(trade)	
+			new_holding = Holding(portfolio_id=portfolio_id,symbol=asset.symbol,quantity=asset.quantity,average_buy_price = asset.price)
+			db.add(new_holding)
+			db.commit()
+			db.refresh(new_holding)
+		else:
+			raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="You can either do buy or sell trade only.") 
+	elif asset.trade_type == "sell":
+		if holding.quantity < asset.quantity:
+			raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Not enough quantity")
+		trade = Trade(**asset.dict(),portfolio_id = portfolio_id)
+		db.add(trade)
+		db.commit()
+		db.refresh(trade)
+		if holding.quantity == asset.quantity:
+			db.delete(holding)
+		else:
+			new_holding = {"portfolio_id":portfolio_id,"symbol":asset.symbol,"quantity":holding.quantity-asset.quantity,"average_buy_price":holding.average_buy_price}
+			holding_query.update(new_holding,synchronize_session=False)
+		db.commit()
+	elif asset.trade_type == "buy":
+		trade = Trade(**asset.dict(),portfolio_id = portfolio_id)
+		db.add(trade)
+		db.commit()
+		db.refresh(trade)
+		new_holding = {"portfolio_id":portfolio_id,"symbol":asset.symbol,"quantity":holding.quantity+asset.quantity,"average_buy_price" : (asset.price*asset.quantity+holding.average_buy_price*holding.quantity)/(asset.quantity + holding.quantity)}
+		holding_query.update(new_holding,synchronize_session=False)
+		db.commit()
+	else:
+			raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="You can either do buy or sell trade only.")
+	return trade		
+	  # id = int
+    # portfolio_id = int
+    # symbol = str
+    # quantity = int
+    # average_buy_price = float
+	
+	
+
+	
+
 
 @router.get("/{id}",response_model=TradeOut)
 def show_trade(id:int , current_user : UserOut = Depends(get_current_user),db:Session=Depends(get_db)):

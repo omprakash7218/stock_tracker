@@ -1,6 +1,7 @@
 from pydantic import BaseModel
+from pydantic import ConfigDict
 class AssetBase(BaseModel):
-	symbol : str	
+	symbol : str
 	name : str
 	asset_type : str
 
@@ -9,6 +10,4 @@ class AssetCreate(AssetBase):
 
 class AssetOut(AssetCreate):
 	id : int
-	class Config:
-		from_attributes = True
-
+	model_config = ConfigDict(from_attributes = True)

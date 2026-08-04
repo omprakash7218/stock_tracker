@@ -7,7 +7,7 @@ from app.models.user import User
 from app.oauth2 import get_current_user
 from app.schemas.user import UserCreate, UserOut
 from typing import List
-
+from app.utils import verify
 router = APIRouter(tags=["USERS"], prefix="/users")
 
 
@@ -24,12 +24,13 @@ def show_users(
     users = db.query(User).all()
     return users
 
+from sqlalchemy import or_
 
 @router.post("/", response_model=UserOut)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     pwd = hash_pwd(user.password)
     user.password = pwd
-    existing_user = db.query(User).filter(User.email == user.email).first()
+    existing_user = db.query(User).filter(or_(User.email == user.email,User.username==user.username)).first()
     if existing_user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
     new_user = User(**user.dict())
@@ -45,15 +46,17 @@ def delete_user(
     password: UserPassword,
     current_user: UserOut = Depends(get_current_user),
     db: Session = Depends(get_db),
-):
+):  
+    if current_user.username != username:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not authorized")
     user_query = db.query(User).filter(
         User.username == username,
-        current_user.username == username,
-        User.password == password.current_password,
     )
     user = user_query.first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    if not verify(password.current_password , user.password):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Incorrect password entered!")
     db.delete(user)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -66,26 +69,23 @@ def update_user(
     edit_user: UserCreate,
     current_user: UserOut = Depends(get_current_user),
     db: Session = Depends(get_db),
-):
+):  
+    if current_user.username != username:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized")
     user_query = db.query(User).filter(
         User.username == username,
-        current_user.username == username,
-        User.password == password.current_password,
     )
     user = user_query.first()
     if not user:
         raise HTTPException(status_code=404, detail="Not Found")
-    if (
-        db.query(User)
-        .filter(User.email == user.email, User.username == user.username)
-        .first()
-        == True
-    ):
+    if not verify(password.current_password,user.password):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Icorrect current password"
+        )
+    if db.query(User).filter((User.email == user.email) |(User.username == user.username)).first():
         raise HTTPException(
             status_code=406,
             detail="A user with same credentials already exist. Try different credentials.",
         )
-
     user_query.update(edit_user.dict(), synchronize_session=False)
     db.commit()
     db.refresh(user)

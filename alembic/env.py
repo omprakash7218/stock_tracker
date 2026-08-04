@@ -15,6 +15,10 @@ from alembic import context
 import app.models.user
 import app.models.asset
 import app.models.portfolio
+import app.models.trade
+import app.models.transaction
+import app.models.holding
+import app.models.cash_transaction
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

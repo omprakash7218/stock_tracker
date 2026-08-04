@@ -32,25 +32,26 @@ def portfolio_service(portfolio_id , current_user,db):
                 "":"-------------------------------",
                 "Asset Symbol":trade.asset.symbol,
                 "Asset Name": trade.asset.name,
-                "Current Price": current_price,
+                "Current Price": round(current_price,2),
                 "Quantity":trade.quantity,
-                "Current Amount": current_amount,
-                "Avg buy price": trade.price,
+                "Current Amount": round(current_amount,2),
+                "Avg buy price": round(trade.price,2),
                 "Invested Amount":invested_amount,
-                "Profit/Loss": profit_loss,
-                "Profit/Loss%": profit_loss_percentage
+                "Profit/Loss": round(profit_loss,2),
+                "Profit/Loss%": round(profit_loss_percentage,2)
             }
         )
         total_current_value += current_amount
         total_amount_invested += invested_amount
-    portfolio_profit_loss = total_current_value - total_amount_invested 
+    portfolio_profit_loss = total_current_value - total_amount_invested
+    portfolio_profit_loss_percentage = (portfolio_profit_loss/total_amount_invested)*100 if total_amount_invested > 0 else 0
     return {
         "Portfolio id":portfolio_id,
         "Portfolio name": portfolio.name,
-        "Total current value":total_current_value,
+        "Total current value":round(total_current_value,2),
         "Total amount invested":total_amount_invested,
-        "Overall profit or loss":portfolio_profit_loss,
-        "Profit or loss percentage":(portfolio_profit_loss/total_amount_invested)*100 if total_amount_invested > 0 else 0,
+        "Overall profit or loss":round(portfolio_profit_loss,2),
+        "Profit or loss percentage":round(portfolio_profit_loss_percentage,2),
         "Holdings":holdings
     }
    

@@ -4,16 +4,18 @@ from app.oauth2 import get_current_user
 from app.database import get_db
 from app.models.portfolio import Portfolio
 from app.models.trade import Trade
+from app.models.user import User
 from app.models.asset import Asset
 from app.schemas.portfolio import PortfolioCreate,PortfolioOut
-from app.schemas.user import UserOut
+from app.schemas.user import UserOut,UserPassword
 from app.verification import verify_portfolio,verify_asset
 from app.services.price_service import PriceService
+from app.utils import verify
 
 router = APIRouter(tags = ["PORTFOLIOS"],prefix="/portfolios")
 @router.get("/")
-def show_portfolios(db:Session=Depends(get_db)):
-	portfolios = db.query(Portfolio).all()
+def show_portfolios(current_user : UserOut = Depends(get_current_user),db:Session=Depends(get_db)):
+	portfolios = db.query(Portfolio).filter(Portfolio.user_id == current_user.id).all()
 	return portfolios
 @router.post("/")
 def create_portfolio(portfolio:PortfolioCreate,current_user = Depends(get_current_user),db:Session=Depends(get_db)):
@@ -25,18 +27,6 @@ def create_portfolio(portfolio:PortfolioCreate,current_user = Depends(get_curren
 	db.refresh(new_portfolio)
 	return new_portfolio
 
-
-@router.put("/{portfolio_id}")
-def edit_portfolio(portfolio_id : int, portfolio:PortfolioCreate,current_user=Depends(get_current_user),db:Session=Depends(get_db)):
-	portfolio_query = db.query(Portfolio).filter(Portfolio.id == portfolio_id and Portfolio.user_id == current_user.id)
-	old_portfolio = portfolio_query.first()
-	if not old_portfolio:
-		raise HTTPException(status_code = 404,detail="Portfolio does not exist")
-	portfolio_query.update(portfolio.dict(),synchronize_session=False)
-	db.commit()
-	db.refresh(portfolio_query.first())
-	return portfolio_query.first()
-
 @router.get("/{portfolio_id}",response_model = PortfolioOut)
 def show_portfolio(portfolio_id:int,current_user : UserOut = Depends(get_current_user),db:Session=Depends(get_db)):
 	portfolio = db.query(Portfolio).filter(Portfolio.id == portfolio_id and Portfolio.user_id == current_user.id).first()
@@ -44,12 +34,29 @@ def show_portfolio(portfolio_id:int,current_user : UserOut = Depends(get_current
 		raise HTTPException(status_code = status.HTTP_403_FORBIDDEN)
 	return portfolio
 
+
+@router.put("/{portfolio_id}")
+def edit_portfolio(portfolio_id : int,portfolio:PortfolioCreate,current_user=Depends(get_current_user),db:Session=Depends(get_db)):
+	
+	portfolio_query = db.query(Portfolio).filter(Portfolio.id == portfolio_id , Portfolio.user_id == current_user.id)
+	old_portfolio = portfolio_query.first()
+	if not old_portfolio:
+		raise HTTPException(status_code = 404,detail="Portfolio does not exist")
+	user = db.query(User).filter(User.username==current_user.username).first()
+	portfolio_query.update(portfolio.dict(),synchronize_session=False)
+	db.commit()
+	db.refresh(old_portfolio)
+	return old_portfolio
+
 @router.delete("/{portfolio_id}")
-def delete_portfolio(portfolio_id:int,current_user:UserOut=Depends(get_current_user),db:Session=Depends(get_db)):
+def delete_portfolio(portfolio_id:int,password:UserPassword,current_user:UserOut=Depends(get_current_user),db:Session=Depends(get_db)):
 	query_portfolio = db.query(Portfolio).filter(Portfolio.id == portfolio_id and Portfolio.user_id == current_user.id)
 	old_portfolio = query_portfolio.first()
 	if not old_portfolio :
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+	user = db.query(User).filter(User.username == current_user).first()
+	if not verify(password.current_password==user.password):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Password Mismatched!")
 	db.delete(old_portfolio)
 	db.commit()
 	return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -62,3 +69,14 @@ def portfolio_sumamry(portfolio_id : int,current_user : UserOut = Depends(get_cu
 	if results is None :
 		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 	return results
+
+@router.post("/{portfolio_id}/deposit")
+def deposit(portfolio_id:int,current_user:UserOut=Depends(get_current_user),db:Session=Depends(get_db)):
+
+
+
+	return 
+
+@router.post("/{portfolio_id}/withdraw")
+def withdraw():
+	return 

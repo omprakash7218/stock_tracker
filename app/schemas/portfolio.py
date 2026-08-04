@@ -1,7 +1,6 @@
 # pydantic model
-from pydantic import BaseModel
+from pydantic import BaseModel,ConfigDict
 from app.schemas.user import UserOut
-
 class PortfolioCreate(BaseModel):
 	name : str
 	description : str
@@ -9,5 +8,5 @@ class PortfolioCreate(BaseModel):
 class PortfolioOut(PortfolioCreate):
 	id : int
 	owner : UserOut
-	class Config:
-		from_attributes = True
+	cash_balance : float
+	model_config = ConfigDict(from_attributes = True)

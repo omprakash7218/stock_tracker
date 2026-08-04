@@ -4,7 +4,8 @@ from app.schemas.asset import AssetCreate
 from app.database import get_db
 from app.models.asset import Asset
 from app.services.price_service import PriceService
-
+from app.schemas.user import UserOut
+from app.oauth2 import get_current_user
 router = APIRouter(prefix="/assets",tags=["ASSETS"])
 
 @router.post("/")
@@ -23,7 +24,9 @@ def show_assets(db:Session=Depends(get_db)):
 	return {"message":assets}
 
 @router.put("/{symbol}")
-def edit_asset(symbol:str , asset1:AssetCreate , db:Session=Depends(get_db)):
+def edit_asset(symbol:str , asset1:AssetCreate , current_user : UserOut = Depends(get_current_user),db:Session=Depends(get_db)):
+	if current_user.username != "admin":
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Only admin is allowed here!")
 	asset_query =db.query(Asset).filter(Asset.symbol == symbol) # This won't be helpful for next operation. 
 	asset = asset_query.first()
 	if not asset:
@@ -34,7 +37,9 @@ def edit_asset(symbol:str , asset1:AssetCreate , db:Session=Depends(get_db)):
 	print(asset)
 	return {"message":asset}
 @router.delete("/{symbol}")
-def delete_asset(symbol:str,db:Session=Depends(get_db)):
+def delete_asset(symbol:str,current_user:UserOut=Depends(get_current_user),db:Session=Depends(get_db)):
+	if current_user.username != "admin":
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Only admin is allowed here!")
 	asset = db.query(Asset).filter(Asset.symbol == symbol)
 	if asset.first() == None:
 		raise HTTPException(status_code = status.HTTP_404_NOT_FOUND)
@@ -56,5 +61,5 @@ def get_asset_price(symbol:str,asset_type:str):
 	if price == None:
 		raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,detail="Could not fetch price.")
 	return {
-		"symbol":symbol,"price":price
+		"symbol":symbol,"price-inr":round(price,3)
 	}
