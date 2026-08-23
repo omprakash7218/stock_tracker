@@ -52,10 +52,46 @@
 # print(get_price_in_inr("MRF.NS"))
 
 
-def sum(a: int, b: int) -> int:
-    results = a + b
-    return str(results)
+# def sum(a: int, b: int) -> int:
+#     results = a + b
+#     return str(results)
 
 
-a, b = 1, 4
-print(sum(a, b))
+# a, b = 1, 4
+# print(sum(a, b))
+# async func vs sync func
+
+# import asyncio
+# import time
+# def function1():
+#     time.sleep(3)
+#     print("hello function 1 ")
+
+# def function2():
+#     time.sleep(5)
+#     print("hello function 2")
+
+# def function3():
+#     time.sleep(1)
+#     print("hello function 3")
+
+
+# function1()
+# function2()
+# function3()
+
+# mypy learnings
+
+# name = "om"
+# age = 24
+# price = 24.5
+# wtf = age + price
+# print(wtf)
+
+a = "20"
+print(a, type(a))
+
+name: str = "union"
+age: int = 55555
+height: float = 5.69
+student: bool = False

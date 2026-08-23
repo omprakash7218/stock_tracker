@@ -1,13 +1,16 @@
-from pydantic import BaseModel
-from pydantic import ConfigDict
+from pydantic import BaseModel, ConfigDict
+
+
 class AssetBase(BaseModel):
-	symbol : str
-	name : str
-	asset_type : str
+    symbol: str
+    name: str
+    asset_type: str
+
 
 class AssetCreate(AssetBase):
-	pass
+    pass
+
 
 class AssetOut(AssetCreate):
-	id : int
-	model_config = ConfigDict(from_attributes = True)
+    id: int
+    model_config = ConfigDict(from_attributes=True)

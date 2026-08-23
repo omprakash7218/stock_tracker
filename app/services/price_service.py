@@ -21,7 +21,7 @@ class PriceService:
 			parameters = {
 				"ids":symbol.lower(),"vs_currencies":"inr"
 			}
-			response = requests.get(url,parameters)
+			response = requests.get(url,params=parameters)
 			price = response.json()[symbol.lower()]["inr"]
 
 			return price 
