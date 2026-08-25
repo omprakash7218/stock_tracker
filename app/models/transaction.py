@@ -1,6 +1,6 @@
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.database import Base
@@ -13,7 +13,9 @@ class Transaction(Base):
     trade_id = Column(
         Integer, ForeignKey("trades.id", ondelete="CASCADE"), nullable=False
     )
-    type = Column(SQLEnum(TransactionType), nullable=False)  # ! Restricted
+    type: Mapped[TransactionType] = mapped_column(
+        SQLEnum(TransactionType), nullable=False
+    )  # ! Restricted
     amount = Column(Float, nullable=False)
     fee = Column(Float, nullable=False)
     timestamp = Column(

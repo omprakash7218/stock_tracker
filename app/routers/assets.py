@@ -13,11 +13,12 @@ router = APIRouter(prefix="/assets", tags=["ASSETS"])
 
 @router.post("/")
 def create_asset(asset: AssetCreate, db: Session = Depends(get_db)):
-
-    if (
-        db.query(Asset).filter(Asset.symbol == asset.symbol or Asset.name == asset.name)
-        == True
-    ):
+    asset_check = (
+        db.query(Asset)
+        .filter(Asset.symbol == asset.symbol or Asset.name == asset.name)
+        .first()
+    )
+    if asset_check:
         raise HTTPException(status_code=406, detail="Asset already exist.")
     new_asset = Asset(**asset.dict())
     db.add(new_asset)
@@ -52,7 +53,8 @@ def edit_asset(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="I don't see the asset in our database.",
         )
-    asset_query.update(asset1.dict(), synchronize_session=False)
+    update_data: dict = asset1.model_dump()
+    asset_query.update(update_data, synchronize_session=False)
     db.commit()
     db.refresh(asset)
     print(asset)
@@ -70,7 +72,7 @@ def delete_asset(
             status_code=status.HTTP_403_FORBIDDEN, detail="Only admin is allowed here!"
         )
     asset = db.query(Asset).filter(Asset.symbol == symbol)
-    if asset.first() == None:
+    if not asset.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     asset.delete(synchronize_session=False)
     db.commit()
@@ -88,7 +90,7 @@ def show_asset(symbol: str, db: Session = Depends(get_db)):
 @router.get("/{symbol}/fetch_current_price")
 def get_asset_price(symbol: str, asset_type: str):
     price = PriceService.get_price(symbol, asset_type)
-    if price == None:
+    if not price:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Could not fetch price."
         )

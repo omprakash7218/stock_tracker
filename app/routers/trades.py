@@ -57,15 +57,15 @@ def create_trade(
             db.add(trade)
             db.commit()
             db.refresh(trade)
-            new_holding = Holding(
+            create_holding = Holding(
                 portfolio_id=portfolio_id,
                 symbol=asset.symbol,
                 quantity=asset.quantity,
                 average_buy_price=asset.price,
             )
-            db.add(new_holding)
+            db.add(create_holding)
             db.commit()
-            db.refresh(new_holding)
+            db.refresh(create_holding)
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -83,13 +83,13 @@ def create_trade(
         if holding.quantity == asset.quantity:
             db.delete(holding)
         else:
-            new_holding = {
+            remaining_holding = {
                 "portfolio_id": portfolio_id,
                 "symbol": asset.symbol,
                 "quantity": holding.quantity - asset.quantity,
                 "average_buy_price": holding.average_buy_price,
             }
-            holding_query.update(new_holding, synchronize_session=False)
+            holding_query.update(remaining_holding, synchronize_session=False)  # type: ignore[arg-type]
         db.commit()
     elif asset.trade_type == "buy":
         trade = Trade(**asset.dict(), portfolio_id=portfolio_id)
@@ -106,7 +106,7 @@ def create_trade(
             )
             / (asset.quantity + holding.quantity),
         }
-        holding_query.update(new_holding, synchronize_session=False)
+        holding_query.update(new_holding, synchronize_session=False)  # type: ignore[arg-type]
         db.commit()
     else:
         raise HTTPException(
@@ -164,7 +164,8 @@ def edit_trade(
     if not trade:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     verify_portfolio(trade.portfolio_id, current_user, db)
-    trade_query.update(edited_trade.dict(), synchronize_session=False)
+    updated_data = edited_trade.model_dump()
+    trade_query.update(updated_data, synchronize_session=False)  # type: ignore[arg-type]
     db.commit()
     db.refresh(trade)
     return trade

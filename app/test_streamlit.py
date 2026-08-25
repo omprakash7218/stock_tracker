@@ -88,10 +88,25 @@
 # wtf = age + price
 # print(wtf)
 
-a = "20"
-print(a, type(a))
+# a = "20"
+# print(a, type(a))
 
-name: str = "union"
-age: int = 55555
-height: float = 5.69
-student: bool = False
+# name: str = "union"
+# age: int = 55555
+# height: float = 5.69
+# student: bool = False
+
+
+# age = "Nivea men fresh deodrant"
+
+
+def sum(a: int, b) -> int:
+    return a + b
+
+
+print(sum(1, 2))
+
+
+user: str | None = "om"
+
+print(user)

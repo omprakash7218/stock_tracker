@@ -7,7 +7,7 @@ from app.models.user import User
 from app.oauth2 import get_current_user
 from app.schemas.portfolio import PortfolioCreate, PortfolioOut, PortfolioUpdate
 from app.schemas.user import UserOut, UserPassword
-from app.services import portfolio_service
+from app.services.portfolio_services import portfolio_service
 from app.utils import verify
 
 router = APIRouter(tags=["PORTFOLIOS"], prefix="/portfolios")
@@ -27,16 +27,14 @@ def create_portfolio(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    new_portfolio = Portfolio(**portfolio.dict(), user_id=current_user.id)
-    if (
+    portfolio_check = (
         db.query(Portfolio)
-        .filter(
-            Portfolio.name == portfolio.name and Portfolio.user_id == current_user.id
-        )
+        .filter(Portfolio.name == portfolio.name, Portfolio.user_id == current_user.id)
         .first()
-        == True
-    ):
+    )
+    if portfolio_check:
         raise HTTPException(status_code=400, detail="Portfolio already exists.")
+    new_portfolio = Portfolio(**portfolio.dict(), user_id=current_user.id)
     db.add(new_portfolio)
     db.commit()
     db.refresh(new_portfolio)
@@ -73,7 +71,8 @@ def edit_portfolio(
     old_portfolio = portfolio_query.first()
     if not old_portfolio:
         raise HTTPException(status_code=404, detail="Portfolio does not exist")
-    portfolio_query.update(portfolio.dict(), synchronize_session=False)
+    update_data: dict = portfolio.model_dump()
+    portfolio_query.update(update_data, synchronize_session=False)
     db.commit()
     db.refresh(old_portfolio)
     return old_portfolio
@@ -93,6 +92,8 @@ def delete_portfolio(
     if not old_portfolio:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     user = db.query(User).filter(User.username == current_user.username).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     if not verify(password.current_password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Password Mismatched!"
