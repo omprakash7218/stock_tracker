@@ -8,3 +8,4 @@ pp/config.py
 hotel.txt
 tasks.txt
 test.txt
+*.swp
