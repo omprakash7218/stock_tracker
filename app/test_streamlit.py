@@ -1,4 +1,5 @@
 # import streamlit as st
+import requests
 
 # st.title("My First Streamlit App")
 
@@ -24,16 +25,16 @@
 # print(data["punchline"])
 
 
-# coin = input("Enter crypto id (bitcoin,ethereum,solana):")
-# url = "https://api.coingecko.com/api/v3/simple/price"
-# params = {
-#     "ids":coin,
-#     "vs_currencies":"inr"
-# }
-# response = requests.get(url,params=params)
-# data = response.json()
-# price = data[coin]["inr"]
-# print(f"The current price of {coin} is Rs.{price}")
+coin = input("Enter crypto id (bitcoin,ethereum,solana):")
+url = "https://api.coingecko.com/api/v3/simple/price"
+params = {
+    "ids":coin,
+    "vs_currencies":"inr"
+}
+response = requests.get(url,params=params)
+data = response.json()
+price = data[coin]["inr"]
+print(f"The current price of {coin} is Rs.{price}")
 
 
 # import yfinance as yf
@@ -50,12 +51,3 @@
 #     return stock_price_inr
 
 # print(get_price_in_inr("MRF.NS"))
-
-
-def sum(a: int, b: int) -> int:
-    results = a + b
-    return str(results)
-
-
-a, b = 1, 4
-print(sum(a, b))
