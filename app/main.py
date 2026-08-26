@@ -1,9 +1,10 @@
 from fastapi import FastAPI
-from .database import engine,Base
+from app.database import engine,Base
 from app.models.asset import Base
 from app.routers import users,assets,auth,portfolios,trades,transactions,holdings,cashtransactions
-app = FastAPI()
 
+
+app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
 app.include_router(auth.router)

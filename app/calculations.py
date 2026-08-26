@@ -16,11 +16,12 @@ def divide(num1:int,num2:int):
 
 from decimal import Decimal
 
+
 class InsufficientFunds(Exception):
 	pass
 
 
-class BankAccount():
+class BankAccount:
 	def __init__(self,starting_amount = 0):
 		self.balance = starting_amount
 
