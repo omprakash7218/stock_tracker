@@ -18,7 +18,7 @@ TestingSessionLocal = sessionmaker(autocommit= False, autoflush=False,bind=engin
 
 
 # dependency
-	
+
 @pytest.fixture
 def session():
 	Base.metadata.drop_all(bind = engine)
@@ -36,7 +36,7 @@ def client(session):
 		finally:
 			session.close()
 	app.dependency_overrides[get_db] = override_get_db
-			
+
 	yield TestClient(app)
 
 
@@ -74,7 +74,7 @@ def authorized_client(client,token):
 	}
 	return client
 
-	
+
 @pytest.fixture
 def test_asset(client):
     res = client.post("/assets",json={"symbol":"dummy","name":"dummy-asset","asset_type":"dummy-type"})
@@ -108,3 +108,8 @@ def test_transaction_create(authorized_client,test_trade_create):
 	res = authorized_client.post(f"/transactions/{trade_id}",json={"fee":20,"notes":"No notes"})
 	dummy_transaction = res.json()
 	return dummy_transaction
+
+
+
+
+

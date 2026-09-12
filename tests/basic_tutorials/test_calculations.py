@@ -1,6 +1,6 @@
 
 import pytest
-from app.calculations import (
+from tests.basic_tutorials.calculations import (
     BankAccount,
     InsufficientFunds,
     add,

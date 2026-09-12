@@ -15,7 +15,6 @@ def test_show_asset(test_asset,client):
     res = client.get("/assets/dummy")
     assert res.status_code == 200
     assert res.json()["name"] == "dummy-asset"
-    
 
 def test_asset_edit(authorized_client,test_asset,test_user):
     res = authorized_client.put("/assets/dummy",json={"symbol":"dummy2.0","name":"dummy-asset","asset_type":"dummy-type"})

@@ -41,6 +41,8 @@ def create_trade(
     current_user: UserOut = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    if asset.quantity <= 0:
+        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST ,detail = "Negative or zero quantity is not allowed!")
     verify_portfolio(portfolio_id, current_user, db)
     verify_asset(asset.asset_id, asset.symbol, db)
     holding_query = db.query(Holding).filter(

@@ -41,7 +41,7 @@ def client(session):
 
 
 # def override_get_current_user():
-# 	return {"username":"test@gmail.com", "password":"passowrd"}
+# 	return {"username":"test@gmail.com", "password":"password"}
 
 
 # app.dependency_overrides[get_current_user] = override_get_current_user
