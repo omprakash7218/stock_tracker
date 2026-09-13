@@ -41,11 +41,17 @@ def create_trade(
     current_user: UserOut = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    verify_portfolio(portfolio_id, current_user, db)
+    
+    portfolio = verify_portfolio(portfolio_id, current_user, db)
+    asset.symbol = asset.symbol.upper()
     verify_asset(asset.asset_id, asset.symbol, db)
     holding_query = db.query(Holding).filter(
         Holding.portfolio_id == portfolio_id, Holding.symbol == asset.symbol
     )
+
+    asset.trade_type = asset.trade_type.lower()
+    
+
     holding = holding_query.first()
     if not holding:
         if asset.trade_type == "sell":
@@ -53,6 +59,9 @@ def create_trade(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Not enough quantity"
             )
         elif asset.trade_type == "buy":
+            
+            if portfolio.cash_balance < asset.price * asset.quantity:
+                raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail="Not enough balance")
             trade = Trade(**asset.dict(), portfolio_id=portfolio_id)
             db.add(trade)
             db.commit()
@@ -92,6 +101,10 @@ def create_trade(
             holding_query.update(remaining_holding, synchronize_session=False)  # type: ignore[arg-type]
         db.commit()
     elif asset.trade_type == "buy":
+        if portfolio.cash_balance < asset.price * asset.quantity:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Not enough balance"
+            )
         trade = Trade(**asset.dict(), portfolio_id=portfolio_id)
         db.add(trade)
         db.commit()

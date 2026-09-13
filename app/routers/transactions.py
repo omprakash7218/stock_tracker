@@ -103,9 +103,9 @@ def edit_transaction(
     if not transaction_obj:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-    transaction_obj["fee"] = transaction.fee
+    transaction_obj.fee = transaction.fee
 
-    transaction_obj["notes"] = transaction.notes
+    transaction_obj.notes = transaction.notes
 
     db.commit()
     db.refresh(transaction_obj)
