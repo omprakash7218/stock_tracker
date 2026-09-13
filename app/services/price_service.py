@@ -2,14 +2,15 @@ import requests
 import yfinance as yf
 
 
-
 class PriceService:
 
 	@staticmethod
 	def get_price(symbol:str,asset_type:str):
+		
 		if asset_type.lower() == "crypto":
 			return PriceService._get_crypto_price(symbol)
 		elif asset_type.lower() == "stock":
+			symbol = symbol.upper()
 			return PriceService._get_stock_price(symbol)
 		else:
 			raise ValueError("Asset Type must be Crypto or Sock")
@@ -36,7 +37,6 @@ class PriceService:
 	@staticmethod
 	def _get_stock_price(symbol:str):
 		try:
-			symbol = symbol.upper()
 			if symbol.endswith(".NS"):
 				price = PriceService._stock_price(symbol)
 				return price
